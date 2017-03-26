@@ -1,4 +1,7 @@
 # diskourse
+
+cd "link to diskourse folder"
+
 git status
 - check for files that have been modified, and if they have been added or not
 
