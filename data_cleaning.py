@@ -15,6 +15,12 @@ import string
 import time
 
 start_time = time.time()
+
+def print_time(label):
+    print "-----------------------------"
+    print label + ": " + str(time.time() - start_time) + "seconds"
+    print "-----------------------------"
+
 # In[13]:
 
 # read gz file and get corpus: list of list of articles
@@ -34,9 +40,8 @@ for i, item in enumerate (data):
 
 # filter empty article
 corpus = filter(None, corpus)
-# corpus = ["I think it's about time. The wounded teacher, 37-year-old Sam Marino, was in serious condition Saturday with gunshot wounds in the shoulder. Police said the boy also shot at a third teacher, Susan Allen, 31, as she fled from the room where Marino was shot. He then shot Marino again before running to a third classroom where a Bible class was meeting. The youngster shot the glass out of a locked door before opening fire, police spokesman Lewis Thurston said. When the youth's pistol jammed, he was tackled by teacher Maurice Matteson, 24, and other students, Thurston said. ``Once you see what went on in there, it's a miracle that we didn't have more people killed,'' Police Chief Charles R. Wall said. Police didn't have a motive, Detective Tom Zucaro said, but believe the boy's primary target was not a teacher but a classmate."]
-corpus = corpus[:2]
-
+print(len(corpus))
+# corpus = corpus[:10]
 # In[68]:
 
 # initialized lemmatizer tools, get a list of bad tags and a list of stopwords
@@ -51,7 +56,6 @@ punctuation.update(["''", '``'])
 
 
 for i in range (len(corpus)):
-    print corpus[i]
     # tokenize the word
     corpus[i] = word_tokenize(corpus[i])
     # remove stop word
@@ -62,15 +66,14 @@ for i in range (len(corpus)):
     corpus[i] = [tuple[0].lower() for tuple in pos_tag(corpus[i]) if tuple[1] not in bad_tags]
     # remove punctuation
     corpus[i] = [word for word in corpus[i] if word not in punctuation]
+    
+    # old method for removing punctuation; cannot handle hyphenated 
+    # words e.g good-hearted, coming-of-age, 16-year-old
+
     # corpus[i] = " ".join(corpus[i]).translate (None, string.punctuation)
     # corpus[i] = word_tokenize(corpus[i])
+    print_time("Document " + str(i))
 
-    print "-----------------------------"
-    print "Document " + str(i) + " " + str(time.time() - start_time) + " seconds"
-    print corpus[i]
-
-
-exit(0)
 # In[72]:
 
 # count # of word occurenences
@@ -80,6 +83,8 @@ df= pd.DataFrame(d.items())
 df.columns = ["word", "count"]
 df.sort_values(by = "count", ascending = False)
 
+# Print 50 most frequent words
+print(df.nlargest(100, 'count'))
 
 # In[76]:
 
@@ -87,3 +92,4 @@ df.sort_values(by = "count", ascending = False)
 with open('cleaned_article.json', 'wb') as outfile:
     json.dump(corpus, outfile)
 
+print_time("Total")
