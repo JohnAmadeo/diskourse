@@ -40,8 +40,11 @@ for i, item in enumerate (data):
 
 # filter empty article
 corpus = filter(None, corpus)
-print(len(corpus))
-# corpus = corpus[:10]
+
+# save corpus of articles in string form
+with open('clean_corpus.json', 'w') as f:
+    json.dump(corpus, f)
+
 # In[68]:
 
 # initialized lemmatizer tools, get a list of bad tags and a list of stopwords
@@ -89,7 +92,7 @@ print(df.nlargest(100, 'count'))
 # In[76]:
 
 # write cleaned data into a json
-with open('cleaned_article.json', 'wb') as outfile:
+with open('processed_corpus.json', 'wb') as outfile:
     json.dump(corpus, outfile)
 
 print_time("Total")
