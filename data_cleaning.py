@@ -66,7 +66,7 @@ for i in range (len(corpus)):
 
     print "Document " + str(i) + " " + str(time.time() - start_time) + " seconds"
     print corpus[i]
-    print "----------------------------"
+    print "-----------------------------"
 
 
 exit(0)
