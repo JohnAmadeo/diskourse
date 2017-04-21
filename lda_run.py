@@ -1,36 +1,29 @@
 import gensim
 from gensim import corpora
 import json
-# import time
-from customprint import print_time, print_blank
-
-# start_time = time.time()
-
-# def print_time(label):
-#     print "----------------------------------------------------------"
-#     print label + ": " + str(time.time() - start_time) + " seconds"
-#     print "----------------------------------------------------------"
+from customprint import print_time, print_blank, print_line
 
 with open('processed_corpus.json', 'r') as f:
-    data = json.load(f)
+    corpus = json.load(f)
 
 
-data = filter(None, data)
-print "Corpus Size: " + str(len(data)) + " Articles"
+corpus = filter(None, corpus)
+print "Corpus Size: " + str(len(corpus)) + " Articles"
 
-for i, article in enumerate (data):
-    data[i] = [s.encode('utf-8') for s in article] # decode unicode str to str
+for i, article in enumerate (corpus):
+    corpus[i] = [s.encode('utf-8') for s in article] # decode unicode str to str
 
 
-dictionary = corpora.Dictionary(data)
+dictionary = corpora.Dictionary(corpus)
 # Represents entire corpus in bag-of-words format i.e list of
  # (id, count) tuples
-doc_term_matrix = [dictionary.doc2bow(doc) for doc in data]
-print_time("Bag-of-words representation created")
+doc_term_matrix = [dictionary.doc2bow(doc) for doc in corpus]
+print_time("Created bag-of-words representation of corpus")
 
 
 # Create variable to store LDA class
 Lda = gensim.models.ldamodel.LdaModel 
+MatrixSimilarity = gensim.similarities.MatrixSimilarity
 
 # Train new model
 
@@ -40,21 +33,28 @@ Lda = gensim.models.ldamodel.LdaModel
 # ldamodel = Lda(doc_term_matrix, 
 #                num_topics=15, 
 #                id2word=dictionary, 
-#                passes=200, 
+#                passes=200, # ~17 minutes
 #                minimum_probability = 0.0001) 
-# print_time("Train LDA model")
-# ldamodel.save('10ap.model')
+# print_time("Trained LDA model")
+# ldamodel.save('ap_lda.model')
 
 # Load old model
-ldamodel = Lda.load('10ap.model')
+ldamodel = Lda.load('ap_lda.model')
 
-# result = []
-# for i in range(len(data[:10])):
-#     article = dict((x,y) for x,y in ldamodel[dictionary.doc2bow(data[:10][i])])
-#     for h in range (0, 10):
-#         if h not in article.keys():
-#             article[h] = 0
-#     result.append(article)
+# Train similarity index (~8 seconds w/ ~2200 documents)
+# sim_index = MatrixSimilarity(ldamodel[doc_term_matrix])
+# sim_index.save("ap_similarity.index")
+# print_time("Created similarity index based on corpus")
+
+# Load old similarity index
+sim_index = MatrixSimilarity.load('ap_similarity.index')
+
+
+
+
+
+
+
 
 
 # Print word distribution (top words only) and corresponding percentage of each topic
@@ -68,7 +68,8 @@ for idx, topic in enumerate(topics):
     word_dist_string = [key + ": " + str(word_dist[key]) 
                         for key in word_dist.keys()]
     print " ".join(word_dist_string)
-    print
+    print_blank
+
 
 # Print topic distribution for first 5 articles
 print("----------- Topic distribution for first 10 articles -----------")
@@ -101,8 +102,31 @@ for i, article_text in enumerate(clean_corpus[:10]):
 
 # Write document similarity function 
 # (see http://stackoverflow.com/questions/22433884/python-gensim-how-to-calculate-document-similarity-using-the-lda-model)
+print_line('Show similarity for first 10 articles')
+
+for i in range(10):
+    article_lda = ldamodel[doc_term_matrix[i]]
+    # List of (article index in corpus, similarity score) pairs
+    similar_documents = sorted(enumerate(sim_index[article_lda]),
+                               key=lambda pair: pair[1],
+                               reverse=True)
+
+    print clean_corpus[i]
+    print_blank(3)
+
+    print_line('Most Similar Articles')
+    for idx, score in similar_documents[:5]:
+        print score
+        print clean_corpus[idx][:300]
+        print_blank(2)
+
+    print_line('Least Similar Articles')
+    for idx, score in similar_documents[-5:]:
+        print score
+        print clean_corpus[idx][:300]
+        print_blank(2)
+
 
 print_time("File lda_run.py executed")
-
 
 
