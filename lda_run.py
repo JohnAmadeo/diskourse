@@ -1,44 +1,33 @@
-
-# coding: utf-8
-
-# In[1]:
-
 import gensim
 from gensim import corpora
 import json
-import time
+# import time
+from customprint import print_time, print_blank
 
-start_time = time.time()
+# start_time = time.time()
 
-def print_time(label):
-    print "-----------------------------"
-    print label + ": " + str(time.time() - start_time) + " seconds"
-    print "-----------------------------"
-
-# In[2]:
+# def print_time(label):
+#     print "----------------------------------------------------------"
+#     print label + ": " + str(time.time() - start_time) + " seconds"
+#     print "----------------------------------------------------------"
 
 with open('processed_corpus.json', 'r') as f:
     data = json.load(f)
 
 
-# In[4]:
-
 data = filter(None, data)
 print "Corpus Size: " + str(len(data)) + " Articles"
-# In[6]:
 
 for i, article in enumerate (data):
     data[i] = [s.encode('utf-8') for s in article] # decode unicode str to str
 
-# In[10]:
 
 dictionary = corpora.Dictionary(data)
 # Represents entire corpus in bag-of-words format i.e list of
  # (id, count) tuples
 doc_term_matrix = [dictionary.doc2bow(doc) for doc in data]
-print_time("Bag of Words")
+print_time("Bag-of-words representation created")
 
-# In[22]:
 
 # Create variable to store LDA class
 Lda = gensim.models.ldamodel.LdaModel 
@@ -59,8 +48,6 @@ Lda = gensim.models.ldamodel.LdaModel
 # Load old model
 ldamodel = Lda.load('10ap.model')
 
-# In[25]:
-
 # result = []
 # for i in range(len(data[:10])):
 #     article = dict((x,y) for x,y in ldamodel[dictionary.doc2bow(data[:10][i])])
@@ -69,8 +56,6 @@ ldamodel = Lda.load('10ap.model')
 #             article[h] = 0
 #     result.append(article)
 
-
-# In[26]:
 
 # Print word distribution (top words only) and corresponding percentage of each topic
 print("----------- Word distribution for each topic -----------")
@@ -91,28 +76,33 @@ clean_corpus = []
 with open('clean_corpus.json', 'r') as f:
     clean_corpus = json.load(f)
 
-for idx, article in enumerate(clean_corpus[:10]):
-    print "--------- Article " + str(idx) + "-------------"
-    print article[:300]
+for i, article_text in enumerate(clean_corpus[:10]):
+    print "--------- Article " + str(i) + "-------------"
+    print article_text[:150]
+
     print '--------- Topic Distribution --------------'
-    for idx, topic in enumerate(ldamodel[doc_term_matrix[idx]]):
+    # sort topics by centrality to article's theme
+    article_lda = sorted(ldamodel[doc_term_matrix[i]], 
+                         key=lambda topic: topic[1],
+                         reverse=True)
+
+    for j, topic in enumerate(article_lda):
         topic_id = topic[0]
         topic_dist = topic[1]
-        topic_word_dist = topics[idx]
+        topic_word_dist = topics[j]
         topic_word_dist_string = [key + ": " + str(topic_word_dist[key]) 
                                   for key in topic_word_dist.keys()]
 
-        print "Topic " + str(topic[0]) + ": " + str(round(topic[1], 5))
+        print "Topic " + str(topic[0]) + ": " + str(round(topic_dist, 5))
         print " ".join(topic_word_dist_string)
-        print 
+        print_blank(1) 
 
-    print '\n\n\n'
+    print_blank(3)
 
 # Write document similarity function 
 # (see http://stackoverflow.com/questions/22433884/python-gensim-how-to-calculate-document-similarity-using-the-lda-model)
 
-print_time("Total")
-# In[ ]:
+print_time("File lda_run.py executed")
 
 
 
