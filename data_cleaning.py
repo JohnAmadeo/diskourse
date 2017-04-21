@@ -1,8 +1,3 @@
-
-# coding: utf-8
-
-# In[10]:
-
 import json
 from nltk.stem.wordnet import WordNetLemmatizer
 from nltk.corpus import wordnet
@@ -13,17 +8,6 @@ import pandas as pd
 import gzip
 import string
 from customprint import print_time, print_blank
-
-# import time
-
-# start_time = time.time()
-
-# def print_time(label):
-#     print "-----------------------------"
-#     print label + ": " + str(time.time() - start_time) + " seconds"
-#     print "-----------------------------"
-
-# In[13]:
 
 # read gz file and get corpus: list of list of articles
 with gzip.open('ap.gz', 'rb') as f:
